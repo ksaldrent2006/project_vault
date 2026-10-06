@@ -2,7 +2,7 @@
 
 Project Description:
 The goal of this project is to create a database system that stores and organizes project ideas that
-can be used by students in Senior Capstone and Software Engineering classes. The system will
+can be used by students in the School of Engineering and Computer Science. The system will
 allow project information to be easily accessed and maintained so that students can review
 available projects and understand their requirements before selecting one.
 
@@ -18,4 +18,4 @@ Project Goals:
 - Store the location of the project’s latest Git repository.
 - Make it easier for future students to continue or build upon previous projects.
 - Meet with Dr. Atwood to gather additional requirements and specifications for the
-system
+system.
