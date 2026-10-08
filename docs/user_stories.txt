@@ -1,0 +1,18 @@
+Project Vault User Stories
+
+Epic 1: Projects
+-US-01: As a user, I would like to view the available projects for the different departments.
+-US-02: As a user, I want to be able to see the project information, including project description and project requirements.
+-US-03: As a user, I would like to create an account to view, request, and add available projects. 
+-US-04: As a user, I would like to be able to access the project repositories.
+-US-05: As a user, I would like to add the project I am working on to the database.
+-US-06: As a user, I would like to have my information registered into the system.
+
+Epic 2: Team
+US-07: As a user, I would like to be able to add myself to a team.
+US-08: As a team member, I should be able to identify what team I am on.
+US-09: 
+
+Epic 3: Progress Tracking
+
+Epic 4: Git Repository Information

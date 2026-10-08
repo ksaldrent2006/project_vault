@@ -6,4 +6,5 @@ Project Requirements:
 - Record the status and progress of a project.
 - Store the location of the project's latest Git repository.
 - Make it easier for future students to continue or build upon previous projects.
-- Meet with Dr. Atwood to gather additional requirements and specifications for the system. 
+- Meet with Dr. Atwood to gather additional requirements and specifications for the system.
+- Create a sign in for users to keep track of their projects and the projects they requested.  
