@@ -1,0 +1,26 @@
+Task List:
+
+Projects:
+- Set up a page where users can view projects by department.
+- Create projects page with a project filtering system (sort by dept)
+- For each project, display the project information (ex: project description)
+- Set up login and sign up for users
+- Create/add projects to the site
+- Use REST API to be able to call to the database
+- Work on the user project request system
+
+Teams:
+- Set up a teams page where users can view their teams and see what progress they have made on projects.
+- Allow users to add themselves to teams / create teams
+- For each user, display all the teams they are on and the projects they are associated with
+- Allow teams to update their project progress and keep it saved
+
+Progress Tracking:
+- Each project should have a progress page associated with it
+- Users can access a project's progress documentation
+- Users can edit only their own project's progress
+
+Git Repo Information:
+- Display information about a projects repository
+- Allow users to add external links that are connected to the repo.
+- Allow users to update repo information for their own projects. 
