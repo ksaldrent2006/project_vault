@@ -7,12 +7,20 @@ Epic 1: Projects
 -US-04: As a user, I would like to be able to access the project repositories.
 -US-05: As a user, I would like to add the project I am working on to the database.
 -US-06: As a user, I would like to have my information registered into the system.
+-US-07: As a user, I would like to request to work on a project.
 
 Epic 2: Team
-US-07: As a user, I would like to be able to add myself to a team.
-US-08: As a team member, I should be able to identify what team I am on.
-US-09: 
+-US-08: As a user, I would like to be able to add myself to a team.
+-US-09: As a team member, I should be able to identify what team(s) I am on.
+-US-10: As a team member, I should be able to update the progress that my team made on a project.
+-US-11: As a team member, I should be able to access one or many projects.
 
 Epic 3: Progress Tracking
+-US-12: As a user, I should be able to access the projects progress documentation.
+-US-13: As a user, I should be able to edit a project's progress documentation, such as project materials, visuals, etc.
+-US-14: As a user, I should be able to see the progress between a certain projects start and end dates. 
 
 Epic 4: Git Repository Information
+-US-15: As a user, I should be able to view information about a project's repository, such as last commit date and owner information.
+-US-16: As a user, I would like to link my repository to my project.
+-US-17: As a user, I should be able to update the repository information, such as updating last commit date when something is added to the repo. 
