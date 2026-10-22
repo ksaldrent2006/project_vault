@@ -1,3 +1,5 @@
+includes/config.php
+
 # Logs
 logs
 *.log
