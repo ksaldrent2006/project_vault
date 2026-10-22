@@ -1,0 +1,38 @@
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #f1f5f9;
+    text-align: center;
+}
+
+.card {
+    padding: 3rem 4rem;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.project {
+    margin: 0 0 0.5rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #38bdf8;
+}
+
+h1{
+    margin: 0;
+    font-size: 3rem;
+}
+
+.note {
+    margin-top: 1rem;
+    color: #94a3b8;
+}
