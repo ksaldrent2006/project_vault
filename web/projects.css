@@ -1,0 +1,64 @@
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #f1f5f9;
+    text-align: center;
+}
+
+#navBar{
+    background-color: 38bdf8;
+    display: flex;
+    align-items: center;
+    padding: 16px;
+}
+
+.logo{
+    height:100;
+    text-align: left;
+}
+
+.pages{
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+}
+
+.projects{
+    align-items: flex-start;
+    background-color: grey;
+    border: 2px solid #f1f5f9;
+}
+
+.project-title{
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-left: 16px;
+}
+
+.project-details{
+    text-align: left;
+    margin-left: 32px;
+}
+
+.project-links{
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+}
+
+.search-sort{
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+}
