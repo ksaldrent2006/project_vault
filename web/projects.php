@@ -7,9 +7,15 @@
     }
     $projects = PVDatabase::getDataFromSQL(
         //make sure to add a project title column, I feel like we need that here
-        "SELECT project_id, department, project_status, project_description, team_id, repo_link
+        "SELECT project_id, department, project_status, project_description, team_id, repo_link, project_name
         FROM projects"
     );
+    $projectInfo = PVDatabase::getDataFromSQL(
+        "SELECT p.project_id, p.department, p.project_status, p.project_description, p.team_id, p.repo_link, p.project_name, t.start_date, t.end_date, t.advisor, t.team_name
+        FROM team t, projects p
+        WHERE t.team_id = p.team_id"
+    );
+
     ?>
     <!DOCTYPE html>
     <html lang="en">
@@ -38,7 +44,7 @@
             <?php endif; ?>
 
             <div class="projects">
-                <?php foreach ($projects as $p): 
+                <?php foreach ($projectInfo as $p): 
                     $searchText = strtolower(
                         ($p['project_title'] ?? '') . ' ' .
                         ($p['department'] ?? ' '). ' ' .
@@ -46,13 +52,18 @@
                 ?>
                     <div class="card project-card" data-search="<?= esc($searchText) ?>" data-dept="<?= esc(mb_strtolower($p['department'] ?? '')) ?>">
                         <div class="project-title">
-                            <h3>Project title here <span>(<?= esc($p['department']) ?>)</span> </h3>
+                            <?php if(!empty($p['project_name'])): ?>
+                                <h3><?= esc($p['project_name'])?> <span>(<?= esc($p['department']) ?>)</span> </h3>
+                            <?php else: ?>
+                                <h3>No Title Given <span>(<?= esc($p['department']) ?>)</span> </h3>
+                            <?php endif; ?>
                             <p>Project status: <?= esc($p['project_status']) ?></p>  
                         </div>
                         <div class="project-details">
-                        <p>Project description and requirements:<?= esc($p['project_description']) ?></p> 
-                        <p>Team(s) that worked on the project: <?= esc($p['team_id']) ?></p>
-                        <span>Dates for when the project was worked on</span>
+                        <p>Project description and requirements: <?= esc($p['project_description']) ?></p> 
+                        <p>Team(s) that worked on the project: <?= esc($p['team_name']) ?></p>
+                        <span>Start Date: <?= esc($p['start_date']) ?></span>
+                        <span>End Date: <?= esc($p['end_date']) ?></span>
                     </div>
                     <div class="project-links">
                         <p>Repo link:</p>
