@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['first_name'] = $user['first_name'];
             $_SESSION['role'] = $user['role'];
 
-            header('Location: index.php');
+            header('Location: projects.php');
             exit;
         }
     } else {

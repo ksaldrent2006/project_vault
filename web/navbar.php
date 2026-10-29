@@ -15,6 +15,8 @@
         <div class="pages">
             <a href="index.php">Coming Soon</a>
             <a href="projects.php">Projects</a>
+            <br>
+            <a href="logout.php">Logout</a>
         </div>
     </div>
 </body>

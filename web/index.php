@@ -13,7 +13,18 @@
     <div class="card">
         <p class="project"><?php echo "Project Vault"; ?></p>
         <h1>Coming Soon</h1>
-        <p class="note">We're working on something great. Check back soon!</p>
+        <p class="note">
+            Thank you for visiting our website. The goal of this project is to create a
+            database system that stores and organizes project ideas that can be used by students
+            in the School of Engineering and Computer Science at Elizabethtown College. <strong>We ask 
+            if everyone could use the login button below to access the site.</strong> Enjoy!
+        </p>
+
+        <a href="projects.php">
+            <button type="button">Login</button>
+        </a>
     </div>
 </body>
 </html>
+
+
