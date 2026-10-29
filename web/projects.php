@@ -35,8 +35,8 @@
                 <label for="deptSort">Sort by Department</label>
                 <select id="deptSort">  
                     <option value="all" selected>All Departments</option>
-                    <option value="cs">Computer Science</option>
-                    <option value="egr">Engineering</option>
+                    <option value="computer science">Computer Science</option>
+                    <option value="engineering">Engineering</option>
                 </select>
             </div>
             <?php if(empty($projects)): ?>
@@ -66,10 +66,13 @@
                         <span>End Date: <?= esc($p['end_date']) ?></span>
                     </div>
                     <div class="project-links">
-                        <p>Repo link:</p>
+                        <p>Repo link:
                         <?php if(!empty($p['repo_link'])): ?>
                             <a href="<?= esc($p['repo_link']) ?>" target="_blank" rel="noopener">Repository</a>
+                        <?php else: ?>
+                            <span>No repository link given.</span>
                         <?php endif; ?>
+                        </p>
                         <button class="proj_req">Request project</button>
                     </div>
                 </div>
@@ -94,7 +97,7 @@
                     let sort = document.getElementById("deptSort");
 
                     searchBar.addEventListener('input', updateSearch);
-                    sort.addEventListener('change', updateSort);
+                    sort.addEventListener('change', updateSearch);
                 }
 
                 function openDetails(){
@@ -105,10 +108,13 @@
                     const query = document.getElementById("searchBar").value.toLowerCase().trim();
                     const dept = document.getElementById("deptSort").value;
 
+                    console.log(query);
+
                     document.querySelectorAll(".project-card").forEach(card => {
                         const matchSearch = card.dataset.search.includes(query);
                         const matchDept = dept === "all" || card.dataset.dept === dept;
-                        card.style.display = (matchSearch && matchDept) ? "" : "none";
+                        card.style.display = (matchSearch) ? "" : "none";
+                        card.style.display = (matchDept) ? "" : "none";
                     });
                 }
             </script>
