@@ -20,7 +20,7 @@ class PVDatabase {
                 self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException $e) {
                 http_response_code(500);
-                exit("Database connection failed.");
+                exit("Database connection failed: " . $e->getMessage());
             }
         }
     }

@@ -36,3 +36,50 @@ h1{
     margin-top: 1rem;
     color: #94a3b8;
 }
+
+/*
+login and register pages
+*/
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    text-align: left;
+}
+
+.auth-form label {
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-form input,
+.auth-form button {
+    padding: 0.6rem;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.auth-form button {
+    border: none;
+    background: #38bdf8;
+}
+
+.message {
+    margin-top:1rem;
+    padding: 0.6rem;
+    border-radius: 6px;
+}
+
+.error {
+    background: #7f1d1d;
+}
+
+.success {
+    background: #14532d;
+}
+
+a {
+    color: #38bdf8;
+}
