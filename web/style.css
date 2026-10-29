@@ -83,3 +83,153 @@ login and register pages
 a {
     color: #38bdf8;
 }
+
+/* projects page styling */
+body.projects-page {
+    display: block;
+    min-height: 100vh;
+    padding: 2.5rem 1rem;
+}
+
+body.projects-page h1{
+    margin-bottom: 0.5rem;
+}
+
+/* projects search and sort */
+.search-sort{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    max-width: 900px;
+    margin: 2rem auto;
+}
+
+.search-sort label{
+    color: #94a3b8;
+}
+
+.search-sort input, .search-sort select{
+    padding: 0.6rem 0.9rem;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #f1f5f9;
+    font: inherit;
+}
+
+.search-sort input::placeholder{
+    color: #94a3b8;
+}
+
+.search-sort input:focus, .search-sort select:focus{
+    outline: none;
+    border-color: #38bdf8;
+}
+
+.search-sort select option{
+    background: #1e293b;
+    color: #f1f5f9;
+}
+
+/* displaying projects */
+
+.projects{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(1000px, 1fr));
+    gap: 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.project-card{
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    text-align: left;
+}
+
+.project-title{
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    cursor: pointer;
+}
+
+.project-title h3{
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.project-title h3 span{
+    color: #38bdf8;
+}
+
+.project-details{
+    margin-top: 1rem;
+    color: #cbd5e1;
+}
+
+.project-details span{
+    color: #94a3b8;
+}
+
+.project-links {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.project-links a{
+    color: #38bdf8;
+    text-decoration: none;
+}
+
+.project-links a:hover{
+    text-decoration: underline;
+}
+
+.proj-req{
+    padding: 0.5rem 1rem;
+    border: 1px solid #38bdf8;
+    border-radius: 10px;
+    background: transparent;
+    color: #38bdf8;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.proj-req:hover{
+    background: #38bdf8;
+    color: #0f172a;
+}
+
+/* future navbar styling */
+#navBar{
+    background-color: #334155;
+    display: flex;
+    align-items: center;
+    padding: 16px;
+}
+
+.logo{
+    height: 100px;
+    text-align: left;
+}
+
+.pages{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+}
+
+.pages a{
+    color: #38bdf8;
+}

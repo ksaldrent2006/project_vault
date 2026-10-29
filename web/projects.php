@@ -1,65 +1,105 @@
 <?php
-    echo '<link rel="stylesheet" href="projects.css">';
-    // echo '<div id="navBar">';
-    // echo '</div>';
-    echo '<div class="search-sort">';
-        echo '<label for="search">Search:</label>';
-        echo '<input type="text" id="searchBar" placeholder="Search projects...">';
-        echo '<label for="deptSort">Sort by Department</label>';
-        echo '<select id="deptSort">';
-            echo '<option value="all" selected>All Departments</option>';
-            echo '<option value="cs">Computer Science</option>';
-            echo '<option value="egr">Engineering</option>';
-        echo '</select>';
-    echo '</div>';
+    require_once __DIR__ . "/../includes/config.php";
+    require_once __DIR__ . "/../includes/PVDatabase.php";
 
-    echo '<div class="projects">';
-            echo '<div class="project-title">';
-                echo '<h3>Project title here <span>(Department)</span> </h3>';
-                echo '<p>Project status here</p>';   
-            echo '</div>';
-            echo '<div class="project-details">';
-                echo '<p>Project description and requirements here</p>'; 
-                echo '<p>Team(s) that worked on the project here.</p>';
-                echo '<span>Dates for when the project was worked on</span>';
-            echo '</div>';
-            echo '<div class="project-links">';
-                echo '<p>Repo link here</p>';
-                echo '<button class="proj_req">Request project</button>';
-            echo '</div>';
+    function esc($value){
+        return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+    }
+    $projects = PVDatabase::getDataFromSQL(
+        //make sure to add a project title column, I feel like we need that here
+        "SELECT project_id, department, project_status, project_description, team_id, repo_link
+        FROM projects"
+    );
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Project Vault | Projects</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body class="projects-page">
+        <div id="navBar">
+        </div>
+        <h1>Projects</h1>
+            <div class="search-sort">
+                <label for="searchBar">Search:</label>
+                <input type="text" id="searchBar" placeholder="Search projects...">
+                <label for="deptSort">Sort by Department</label>
+                <select id="deptSort">  
+                    <option value="all" selected>All Departments</option>
+                    <option value="cs">Computer Science</option>
+                    <option value="egr">Engineering</option>
+                </select>
+            </div>
+            <?php if(empty($projects)): ?>
+                <p>No projects found.</p>
+            <?php endif; ?>
 
-    echo '</div>';
-?>
-<script> 
-    window.addEventListener('load', init);
+            <div class="projects">
+                <?php foreach ($projects as $p): 
+                    $searchText = strtolower(
+                        ($p['project_title'] ?? '') . ' ' .
+                        ($p['department'] ?? ' '). ' ' .
+                        ($p['team_id'] ?? ' '));
+                ?>
+                    <div class="card project-card" data-search="<?= esc($searchText) ?>" data-dept="<?= esc(mb_strtolower($p['department'] ?? '')) ?>">
+                        <div class="project-title">
+                            <h3>Project title here <span>(<?= esc($p['department']) ?>)</span> </h3>
+                            <p>Project status: <?= esc($p['project_status']) ?></p>  
+                        </div>
+                        <div class="project-details">
+                        <p>Project description and requirements:<?= esc($p['project_description']) ?></p> 
+                        <p>Team(s) that worked on the project: <?= esc($p['team_id']) ?></p>
+                        <span>Dates for when the project was worked on</span>
+                    </div>
+                    <div class="project-links">
+                        <p>Repo link:</p>
+                        <?php if(!empty($p['repo_link'])): ?>
+                            <a href="<?= esc($p['repo_link']) ?>" target="_blank" rel="noopener">Repository</a>
+                        <?php endif; ?>
+                        <button class="proj_req">Request project</button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            </div>
+            <script> 
+                window.addEventListener('load', init);
 
-    function init(){
-        // fetch("navbar.php")
-        // .then(res => res.text())
-        // .then(data => {
-        //     document.getElementById("navBar").innerHTML = data;
-        // })
-        // .catch(error => console.error("Error loading navbar: ", error));
+                function init(){
+                    fetch("navbar.php")
+                    .then(res => res.text())
+                    .then(data => {
+                        document.getElementById("navBar").innerHTML = data;
+                    })
+                    .catch(error => console.error("Error loading navbar: ", error));
         
-        let title = document.querySelector(".project-title");
-        title.addEventListener('click', openDetails);
+                    document.querySelectorAll(".project-title").forEach(t => {
+                        t.addEventListener('click', openDetails);
+                    });
 
-        let searchBar = document.getElementById("searchBar");
-        let sort = document.getElementById("deptSort");
+                    let searchBar = document.getElementById("searchBar");
+                    let sort = document.getElementById("deptSort");
 
-        searchBar.addEventListener('input', updateSearch);
-        sort.addEventListener('change', updateSort);
-    }
+                    searchBar.addEventListener('input', updateSearch);
+                    sort.addEventListener('change', updateSort);
+                }
 
-    function openDetails(){
-        console.log("This will open up a little progress window");
-    }
+                function openDetails(){
+                    console.log("This will open up a little progress window");
+                }
 
-    function updateSearch(){
-        console.log("Search through projects by title or team");
-    }
+                function updateSearch(){
+                    const query = document.getElementById("searchBar").value.toLowerCase().trim();
+                    const dept = document.getElementById("deptSort").value;
 
-    function updateSort(){
-        console.log(this.value);
-    }
-</script>
+                    document.querySelectorAll(".project-card").forEach(card => {
+                        const matchSearch = card.dataset.search.includes(query);
+                        const matchDept = dept === "all" || card.dataset.dept === dept;
+                        card.style.display = (matchSearch && matchDept) ? "" : "none";
+                    });
+                }
+            </script>
+        </body>
+    </html>

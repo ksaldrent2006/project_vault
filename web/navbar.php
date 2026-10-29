@@ -1,10 +1,21 @@
-<?php
-    echo '<link rel="stylesheet" href="projects.css">';
-    echo '<div id="navBar">';
-        echo '<img class="logo" src="images/project_vault_logo_final-removebg-preview.png" alt="project vault logo">';
-        echo '<div class="pages">';
-                echo '<a href="index.php">Coming Soon</a>';
-                echo '<a href="projects.php">Projects</a>';
-        echo '</div>';
-    echo '</div>';
-?>
+<?php ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NavBar</title>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="navBar">
+        <p class="project">Project Vault</p>
+        <img class="logo" src="images/project_vault_logo_final-removebg-preview.png" alt="project vault logo">
+        <div class="pages">
+            <a href="index.php">Coming Soon</a>
+            <a href="projects.php">Projects</a>
+        </div>
+    </div>
+</body>
+</html>
