@@ -10,7 +10,7 @@ require_once __DIR__ . '/../includes/PVDatabase.php';
 
 // skip login page if already logged in
 if (isset($_SESSION['person_id'])) {
-    header('Location: index.php');
+    header('Location: projects.php');
     exit;
 }
 

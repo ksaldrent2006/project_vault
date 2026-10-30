@@ -20,7 +20,7 @@
             if everyone could use the login button below to access the site.</strong> Enjoy!
         </p>
 
-        <a href="projects.php">
+        <a href="login.php">
             <button type="button">Login</button>
         </a>
     </div>
