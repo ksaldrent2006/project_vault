@@ -38,6 +38,7 @@
                     <option value="computer science">Computer Science</option>
                     <option value="engineering">Engineering</option>
                 </select>
+                <button class="addProject">Add Project</button>
             </div>
             <?php if(empty($projects)): ?>
                 <p>No projects found.</p>
@@ -47,8 +48,7 @@
                 <?php foreach ($projectInfo as $p): 
                     $searchText = strtolower(
                         ($p['project_title'] ?? '') . ' ' .
-                        ($p['department'] ?? ' '). ' ' .
-                        ($p['team_id'] ?? ' '));
+                        ($p['team_name'] ?? ' '));
                 ?>
                     <div class="card project-card" data-search="<?= esc($searchText) ?>" data-dept="<?= esc(mb_strtolower($p['department'] ?? '')) ?>">
                         <div class="project-title">
@@ -73,7 +73,7 @@
                             <span>No repository link given.</span>
                         <?php endif; ?>
                         </p>
-                        <button class="proj_req">Request project</button>
+                        <button id="req" class="proj_req">Request project</button>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -92,12 +92,17 @@
                     document.querySelectorAll(".project-title").forEach(t => {
                         t.addEventListener('click', openDetails);
                     });
+                    document.querySelectorAll(".proj_req").forEach(r => {
+                        r.addEventListener('click', requestProject);
+                    });
 
                     let searchBar = document.getElementById("searchBar");
                     let sort = document.getElementById("deptSort");
 
                     searchBar.addEventListener('input', updateSearch);
                     sort.addEventListener('change', updateSearch);
+
+                    document.getElementById("addProject").addEventListener('click', addProject);
                 }
 
                 function openDetails(){
@@ -108,14 +113,20 @@
                     const query = document.getElementById("searchBar").value.toLowerCase().trim();
                     const dept = document.getElementById("deptSort").value;
 
-                    console.log(query);
-
                     document.querySelectorAll(".project-card").forEach(card => {
                         const matchSearch = card.dataset.search.includes(query);
                         const matchDept = dept === "all" || card.dataset.dept === dept;
                         card.style.display = (matchSearch) ? "" : "none";
-                        card.style.display = (matchDept) ? "" : "none";
+                        card.style.display = (matchSearch && matchDept) ? "" : "none";
                     });
+                }
+
+                function requestProject(){
+                    console.log("Requesting project");
+                }
+
+                function addProject(){
+                    console.log("This will pull up a screen to input project details.");
                 }
             </script>
         </body>
