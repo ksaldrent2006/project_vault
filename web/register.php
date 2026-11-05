@@ -70,7 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Create Account</h1>
 
         <?php if ($error): ?>
-            <div class="message error"><php echo htmlspecialchars($error) ?></div>
+            <div class="message error"><?php echo htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+
+        <?php if ($success): ?>
+            <div class="message success"><?php echo htmlspecialchars($success) ?></div>
         <?php endif; ?>
 
         <form class="auth-form" method="post">
@@ -78,13 +82,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label>First Name
                     <input type="text" name="first_name" value="<?= htmlspecialchars($first) ?>" required>                
                 </label>
+                <br>
                 <label>Last Name
                     <input type="text" name="last_name" value="<?= htmlspecialchars($last) ?>" required>
                 </label>
+            </div>
 
-                <label>Email
-                    <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" required>                
-                </label>
+            <label>Email
+                <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" required>                
+            </label>
 
             <label>Password
                 <input type="password" name="password" minlength="8" required>
