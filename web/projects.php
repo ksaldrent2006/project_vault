@@ -10,10 +10,15 @@
         "SELECT project_id, department, project_status, project_description, team_id, repo_link, project_name
         FROM projects"
     );
+    $teams = PVDatabase::getDataFromSql(
+        "SELECT start_date, end_date, advisor, team_name, team_id
+        FROM team;"
+    );
+
     $projectInfo = PVDatabase::getDataFromSQL(
         "SELECT p.project_id, p.department, p.project_status, p.project_description, p.team_id, p.repo_link, p.project_name, t.start_date, t.end_date, t.advisor, t.team_name
-        FROM team t, projects p
-        WHERE t.team_id = p.team_id"
+        FROM projects p
+        LEFT JOIN team t ON t.team_id = p.team_id"
     );
 
     ?>
@@ -38,16 +43,62 @@
                     <option value="computer science">Computer Science</option>
                     <option value="engineering">Engineering</option>
                 </select>
+                <!-- maybe add a sort by start date and end date feature -->
                 <button class="addProject">Add Project</button>
             </div>
             <?php if(empty($projects)): ?>
                 <p>No projects found.</p>
             <?php endif; ?>
+            <dialog id="addForm">
+                <h3>Add Project</h3>
+                <!-- this will need to be connected to where our post methods are stored -->
+                <form action="projectadd.php" method="POST">
+                    <label for="projectName">Project Name:</label>
+                    <input type="text" id="projectName" name="projectName" required>
+                    <label for="allTeams">Team:</label>
+                        <select id="allTeams" name="teamId"> 
+                            <option value="">Select a team</option>
+                            <!-- <option value="0">No team</option> -->
+                            <?php foreach ($teams as $t): ?>
+                                <option value="<?= (int)$t['team_id'] ?>"><?= esc($t['team_name'])?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    <label for="projectDescription">Project Description:</label>
+                    <input type="text" id="projectDescription" name="projectDescription">
+                    <label for="projectReqs">Project Requirements:</label>
+                    <input type="text" id="projectReqs" name="projectReqs">
+                    <label for="projectStatus">Status: </label>
+                        <select id="projectStatus" name="projectStatus">
+                            <option value="not started"> Not Started </option>  
+                            <option value="in progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    <label for="depts">Department:</label>
+                        <select id="depts" name="department">
+                            <option value=""> No Department Selected </option>  
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Engineering">Engineering</option>
+                        </select>
+                    <label for="repoLink">Repository Link:</label>
+                    <input type="text" id="repoLink" name="repoLink">
+                    <div class="actions">
+                        <button type="button" id="closeBtn">Close</button>
+                        <button type="submit" id="submitBtn">Add Project</button>
+                    </div>
+                </form>
+            </dialog>
+            <?php if (isset($_GET['added'])): ?>
+                <p class="note">Project successfully added.</p>
+            <?php elseif (($_GET['error'] ?? '') == 'invalid'): ?>
+                <p class="note">Please double check your inputs and try again. </p>
+            <?php elseif (($_GET['error'] ?? '') === 'db'): ?>
+                <p class="note">Could not save project. Please try again later. </p>
+            <?php endif; ?>
 
             <div class="projects">
                 <?php foreach ($projectInfo as $p): 
                     $searchText = strtolower(
-                        ($p['project_title'] ?? '') . ' ' .
+                        ($p['project_name'] ?? '') . ' ' .
                         ($p['team_name'] ?? ' '));
                 ?>
                     <div class="card project-card" data-search="<?= esc($searchText) ?>" data-dept="<?= esc(mb_strtolower($p['department'] ?? '')) ?>">
@@ -102,7 +153,17 @@
                     searchBar.addEventListener('input', updateSearch);
                     sort.addEventListener('change', updateSearch);
 
-                    document.getElementById("addProject").addEventListener('click', addProject);
+                    const popup = document.getElementById("addForm");
+                    const addBtn = document.querySelector(".addProject")
+                    addBtn.addEventListener('click', () => {
+                        popup.showModal();
+                    });
+                    const closeBtn = document.getElementById("closeBtn");
+                    closeBtn.addEventListener('click', () => {
+                        popup.close();
+                    });
+                    //const submitBtn = document.getElementById(".submitBtn");
+                    //submitBtn.addEventListener('click', addProject);
                 }
 
                 function openDetails(){
@@ -126,7 +187,24 @@
                 }
 
                 function addProject(){
-                    console.log("This will pull up a screen to input project details.");
+                    console.log("Add project");
+
+                    const name = document.getElementById("projectName").textContent;
+                    const team = document.getElementById("allTeams").value;
+                    const desc = document.getElementById("projectDescription").textContent;
+                    const reqs = document.getElementById("projectReqs").textContent;
+                    const status = document.getElementById("projectStatus").value;
+                    const depts = document.getElementById("depts").value;
+                    const repo = document.getElementById("repoLink").textContent;
+
+                    const sql = "INSERT INTO projects (project_description, team_id, project_requirements, project_status, department, repo_link, project_name) VALUES(?,?,?,?,?,?,?);";
+                    // // example insert statements
+                    // INSERT INTO team (team_id, start_date, end_date, advisor, team_name)
+                    // values (3, '2026-10-6', '2026-12-4', 'Professor Reddig', 'Engineering Team Delta');
+
+                    // INSERT INTO projects (project_description, team_id, project_requirements, project_status, department, repo_link, project_id, project_name)
+                    // values ('Create a website where users can log in and see all of the projects for the school of ECS', 1, 'see our repo for requirements', 'in progress', 'Computer Science', 'https://github.com/ksaldrent2006/project_vault', 1, 'Project Vault');
+
                 }
             </script>
         </body>
