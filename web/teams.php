@@ -72,7 +72,25 @@ $myTeams = PVDatabase::getDataFromSQL(
     [$me]
 );
 
+// team members
+$memberRows = PVDatabase::getDataFromSQL(
+    "SELECT tm.team_id, p.first_name, p.last_name, p.email_address
+    FROM team_member tm
+    JOIN person p ON p.person_id = tm.member_id
+    ORDER BY p.first_name, p.last_name"
+);
+
+$membersByTeam = [];
+foreach ($memberRows as $row) {
+    $name = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+    if ($name === '') {
+        $name = $row['email_address']; 
+    }
+    $membersByTeam[$row['team_id']][] = $name;
+}
+
 // all teams (search and sort)
+/*
 $search = trim($_GET['search'] ?? '');
 $sort = $_GET['sort'] ?? 'newest';
 
@@ -93,6 +111,19 @@ $allTeams = PVDatabase::getDataFromSQL(
      ORDER BY $orderBy",
     [$me, "%$search%", "%$search%"]
 );
+*/
+
+$allTeams = PVDatabase::getDataFromSQL(
+    "SELECT t.*,
+        EXISTS (SELECT 1 FROM team_member tm
+                WHERE tm.team_id = t.team_id AND tm.member_id = ?) AS
+        is_member 
+        FROM team t
+        ORDER BY t.team_id DESC",
+        [$me]
+);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -127,6 +158,7 @@ $allTeams = PVDatabase::getDataFromSQL(
                 </div>
                 <div class="project-details">
                     <p>Advisor: <?= esc($t['advisor']) ?></p>
+                    <p>Members: <?= esc(implode(', ', $membersByTeam[$t['team_id']] ?? [])) ?></p>
                     <span>Start Date: <?= esc($t['start_date']) ?></span>
                     <span>End Date: <?= esc($t['end_date']) ?></span>
                 </div>
@@ -156,56 +188,99 @@ $allTeams = PVDatabase::getDataFromSQL(
  
     <!-- all teams -->
     <h2>All Teams</h2>
-    <form method="get" class="search-sort">
+    <div class="search-sort">
         <label for="searchBar">Search:</label>
-        <input type="text" id="searchBar" name="search" placeholder="Search teams..." value="<?= esc($search) ?>">
+        <input type="text" id="searchBar" placeholder="Search teams...">
         <label for="sort">Sort by</label>
-        <select id="sort" name="sort">
-            <option value="newest" <?= $sort === 'newest' ? 'selected' : '' ?>>Newest</option>
-            <option value="start"  <?= $sort === 'start'  ? 'selected' : '' ?>>Start date</option>
-            <option value="name"   <?= $sort === 'name'   ? 'selected' : '' ?>>Name (A-Z)</option>
+        <select id="sort">
+            <option value="newest" selected>Newest</option>
+            <option value="start">Start Date</option>
+            <option value="name">Name (A-Z)</option>
         </select>
-        <button type="submit">Search</button>
-    </form>
- 
-    <?php if (!$allTeams): ?>
-        <p>No teams found.</p>
-    <?php endif; ?>
- 
-    <div class="projects">
-        <?php foreach ($allTeams as $t): ?>
-            <div class="card project-card">
-                <div class="project-title">
-                    <h3><?= esc($t['team_name']) ?></h3>
-                </div>
-                <div class="project-details">
-                    <p>Advisor: <?= esc($t['advisor']) ?></p>
-                    <span>Start Date: <?= esc($t['start_date']) ?></span>
-                    <span>End Date: <?= esc($t['end_date']) ?></span>
-                </div>
-                <div class="project-links">
-                    <?php if ($t['is_member']): ?>
-                        <span class="note">Joined ✓</span>
-                    <?php else: ?>
-                        <form method="post">
-                            <input type="hidden" name="action" value="join">
-                            <input type="hidden" name="team_id" value="<?= $t['team_id'] ?>">
-                            <button type="submit">Join team</button>
-                        </form>
-                    <?php endif; ?>
-                </div>
-            </div>
-        <?php endforeach; ?>
     </div>
  
-    <!-- load the navbar, same as projects.php -->
+    <p id="noResults" <?= $allTeams ? 'style="display:none"' : '' ?>>No teams found.</p>
+
+    <div class="projects" id="allTeamsList">
+        <?php foreach ($allTeams as $t):
+            $searchText = strtolower(($t['team_name'] ?? '') . ' ' . ($t['advisor'] ?? ''));
+        ?>
+ 
+    <div class="card project-card team-card"
+        data-search="<?= esc($searchText) ?>"
+        data-id="<?= (int)$t['team_id'] ?>"
+        data-name="<?= esc(strtolower($t['team_name'] ?? '')) ?>"
+        data-start="<?= esc($t['start_date']) ?>">
+    <div class="project-title">
+        <h3><?= esc($t['team_name']) ?></h3>
+        </div>
+            <div class="project-details">
+                <p>Advisor: <?= esc($t['advisor']) ?></p>
+                <span>Start Date: <?= esc($t['start_date']) ?></span>
+                <span>End Date: <?= esc($t['end_date']) ?></span>
+            </div>
+            <div class="project-links">
+                <?php if ($t['is_member']): ?>
+                    <span class="note">Joined ✓</span>
+                <?php else: ?>
+                    <form method="post">
+                        <input type="hidden" name="action" value="join">
+                        <input type="hidden" name="team_id" value="<?= $t['team_id'] ?>">
+                        <button type="submit">Join team</button>
+                    </form>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php endforeach; ?>
+    </div>
+ 
     <script>
-        window.addEventListener('load', () => {
+        window.addEventListener('load', init);
+
+        function init() {
+            // load the navbar, same as projects.php
             fetch("navbar.php")
                 .then(res => res.text())
                 .then(data => { document.getElementById("navBar").innerHTML = data; })
                 .catch(error => console.error("Error loading navbar: ", error));
-        });
+
+                // input happens on every key press, so the list update as you type
+                document.getElementById("searchBar").addEventListener('input', updateSearch);
+                document.getElementById("sort").addEventListener('change', updateSort);
+        }
+
+        function updateSearch() {
+            const query = document.getElementById("searchBar").value.toLowerCase().trim();
+            let shown = 0;
+
+            document.querySelectorAll(".team-card").forEach(card => {
+                const match = card.dataset.search.includes(query);
+                card.style.display = match ? "" : "none";
+                if (match) shown++;
+            });
+
+            document.getElementById("noResults").style.display = (shown === 0) ? "" : "none";
+        }
+
+        function updateSort() {
+            const sort = document.getElementById("sort").value;
+            const list = document.getElementById("allTeamsList");
+            const cards = Array.from(list.querySelectorAll(".team-card"));
+
+            cards.sort((a, b) => {
+                if (sort === "name") {
+                    return a.dataset.name.localeCompare(b.dataset.name);
+                }
+                if (sort === "start") {
+                    if (!a.dataset.start) return 1;
+                    if (!b.dataset.start) return -1;
+                    return a.dataset.start.localeCompare(b.dataset.start);
+                }
+                return b.dataset.id - a.dataset.id;
+            });
+
+            cards.forEach(card => list.appendChild(card));
+        }
     </script>
 </body>
 </html>

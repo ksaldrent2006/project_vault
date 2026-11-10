@@ -29,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please fill in every field.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "That email address doesn't look right.";
+    } elseif (!str_ends_with(strtolower($email), '@etown.edu')) {
+        $error = "Your email must end with @etown.edu";
     } elseif (strlen($pass) < 8) {
         $error = 'Password must be at least 8 characters.';
     } elseif ($pass !== $confirm) {

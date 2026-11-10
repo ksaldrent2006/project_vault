@@ -52,6 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please fill in your name and email.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "That email address doesn't look right.";
+    } elseif (!str_ends_with(strtolower($email), '@etown.edu')) {
+        $error = 'You must sign up with your @etown.edu email.';
     } elseif ($newPass !== '' && strlen($newPass) < 8) {
         $error = 'New password must be at least 8 characters.';
     } elseif ($newPass !== $confirm) {

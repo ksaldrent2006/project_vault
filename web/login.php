@@ -2,6 +2,8 @@
 /**
  * login.php checks email and password against the person table
  * and logs the user in
+ * 
+ * only @etown.edu email addresses are allowed to log in
  */
 
 session_start();
@@ -22,33 +24,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $pass = $_POST['password'] ?? '';
 
-    // find account by email
-    $rows = PVDatabase::getDataFromSQL(
-        "SELECT person_id, first_name, password, role, currently_active
-         FROM person
-         WHERE email_address = ?",
-        [$email]
-    );
-
-    // password_verify() in php checks the typed password against the saved hash
-    if (count($rows) === 1 && password_verify($pass, $rows[0]['password'])) {
-        $user = $rows[0];
-
-        if ($user['currently_active'] == 0) {
-            $error = 'This account has been deactivated.';
-        } else {
-            session_regenerate_id(true);
-
-            // save who they are in the session
-            $_SESSION['person_id'] = $user['person_id'];
-            $_SESSION['first_name'] = $user['first_name'];
-            $_SESSION['role'] = $user['role'];
-
-            header('Location: projects.php');
-            exit;
-        }
+    // check that it's an etown email
+    if (!str_ends_with(strtolower($email), 'etown.edu')) {
+        $error = 'Only @etown.edu email addresses can log in.';
     } else {
-        $error = 'Wrong email or password.';
+        // find account by email
+        $rows = PVDatabase::getDataFromSQL(
+            "SELECT person_id, first_name, password, role, currently_active
+            FROM person
+            WHERE email_address = ?",
+            [$email]
+        );
+
+        // password_verify() in php checks the typed password against the saved hash
+        if (count($rows) === 1 && password_verify($pass, $rows[0]['password'])) {
+            $user = $rows[0];
+
+            if ($user['currently_active'] == 0) {
+                $error = 'This account has been deactivated.';
+            } else {
+                session_regenerate_id(true);
+
+                // save who they are in the session
+                $_SESSION['person_id'] = $user['person_id'];
+                $_SESSION['first_name'] = $user['first_name'];
+                $_SESSION['role'] = $user['role'];
+
+                header('Location: projects.php');
+                exit;
+            }
+        } else {
+            $error = 'Wrong email or password.';
+        }
     }
 }
 ?>
