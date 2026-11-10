@@ -7,6 +7,33 @@
         exit;
     }
 
+    function redirect($query){
+        header("Location: projects.php?" . $query);
+        exit;
+    }
+
+    $action = $_POST['action'] ?? '';
+    $projectId = (int)($_POST['projectId'] ?? 0);
+
+    // DELETE Function
+    if($action === 'delete'){
+        if($projectId <= 0) redirect("error=invalid");
+
+        try{
+            PVDatabase::executeSQL("DELETE FROM projects WHERE project_id = ?", [$projectId]);
+        }catch (PDOException $e){
+            error_log("Delete project failed: " . $e->getMessage());
+            redirect("error=db");
+        }
+        redirect("deleted=1");
+    }
+
+// Add and Edit
+
+    if($action !== 'add' && $action !== 'edit'){
+        redirect("error=invalid");
+    }
+
     $name = trim($_POST['projectName'] ?? '');
     $desc = trim($_POST['projectDescription'] ?? '');
     $reqs = trim($_POST['projectReqs'] ?? '');
@@ -18,14 +45,15 @@
     $allowedStatus = ['not started', 'in progress', 'completed'];
     $allowedDepts = ['Computer Science', 'Engineering'];
 
-    if($name === '' || $teamId <= 0 || !in_array($status, $allowedStatus, true) || ($dept !== '' && !in_array($dept, $allowedDepts, true))){
-        header("Location: projects.php?error=invalid");
-        exit;
+    if($name === '' || $teamId <= 0 
+        || !in_array($status, $allowedStatus, true) 
+        || ($dept !== '' && !in_array($dept, $allowedDepts, true))
+        || ($action === 'edit' && $projectId <= 0)){
+        redirect("error=invalid");
     }
 
     if ($repo !== '' && !filter_var($repo, FILTER_VALIDATE_URL)){
-        header("Location: projects.php?error=invalid");
-        exit;
+        redirect("error=invalid");
     }
 
     $desc = $desc !== '' ? $desc : null;
@@ -35,19 +63,28 @@
     $repo = $repo !== '' ? $repo : null;
 
     try{
-        PVDatabase::executeSQL(
+        if($action === 'add'){
+            PVDatabase::executeSQL(
             "INSERT INTO projects
                 (project_name, project_description, project_requirements,
                 project_status, department, team_id, repo_link)
             VALUES (?, ?, ?, ?, ?, ?, ?)",
             [$name, $desc, $reqs, $status, $dept, $teamId, $repo]
-        );
-    } catch (PDOException $e){
-        error_log("Insert project failed: " . $e->getMessage());
-        header("Location: projects.php?error=db");
-        exit;
-    }
+            );
+            redirect('added=1');
+        }
 
-    header("Location: projects.php?added=1");
-    exit;
+        PVDatabase::executeSQL(
+            "UPDATE projects
+            SET project_name = ?, project_description = ?, project_requirements = ?, 
+            project_status = ?, department = ?, team_id = ?, repo_link = ?
+            WHERE project_id = ?;",
+            [$name, $desc, $reqs, $status, $dept, $teamId, $repo, $projectId]
+        );
+        redirect("updated=1");
+
+    } catch (PDOException $e){
+        error_log("Project $action failed: " . $e->getMessage());
+        redirect("error=db");
+    }
 ?>

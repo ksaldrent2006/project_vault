@@ -183,6 +183,54 @@ body.projects-page h1 {
     color: #38bdf8;
 }
 
+.project-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.project-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.edit_project,
+.delete_project {
+    padding: 0.4rem, 0.9rem;
+    border-radius: 10px;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.edit_project {
+    border: 1px solid #38bdf8;
+    color: #0f172a;
+}
+
+.edit_project:hover {
+    background: #38bdf8;
+    color:#1e293b;
+}
+
+.delete_project {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #38bdf8;
+    border-radius: 10px;
+    background: #1e293b;
+    color: #38bdf8;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+}
+
+.delete_project:hover {
+    background: #38bdf8;
+    color: #0f172a;
+}
 .project-details {
     margin-top: 1rem;
     color: #cbd5e1;

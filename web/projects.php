@@ -1,6 +1,16 @@
 <?php
+    session_start();
     require_once __DIR__ . "/../includes/config.php";
     require_once __DIR__ . "/../includes/PVDatabase.php";
+
+    // only loggined in users can use this page
+    if (!isset($_SESSION['person_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+
+    $me = $_SESSION['person_id'];
+    $message = '';
 
     function esc($value){
         return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
@@ -16,7 +26,7 @@
     );
 
     $projectInfo = PVDatabase::getDataFromSQL(
-        "SELECT p.project_id, p.department, p.project_status, p.project_description, p.team_id, p.repo_link, p.project_name, t.start_date, t.end_date, t.advisor, t.team_name
+        "SELECT p.project_id, p.department, p.project_status, p.project_description, p.project_requirements, p.team_id, p.repo_link, p.project_name, t.start_date, t.end_date, t.advisor, t.team_name
         FROM projects p
         LEFT JOIN team t ON t.team_id = p.team_id"
     );
@@ -31,8 +41,7 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body class="projects-page">
-        <div id="navBar">
-        </div>
+        <div id="navBar"></div>
         <h1>Projects</h1>
             <div class="search-sort">
                 <label for="searchBar">Search:</label>
@@ -44,7 +53,7 @@
                     <option value="engineering">Engineering</option>
                 </select>
                 <!-- maybe add a sort by start date and end date feature -->
-                <button class="addProject">Add Project</button>
+                <button type="button" class="addProject">Add Project</button>
             </div>
             <?php if(empty($projects)): ?>
                 <p>No projects found.</p>
@@ -53,6 +62,8 @@
                 <h3>Add Project</h3>
                 <!-- this will need to be connected to where our post methods are stored -->
                 <form action="projectadd.php" method="POST">
+                    <input type="hidden" name="action" id="formAction" value="add">
+                    <input type="hidden" name="projectId" id="projectId" value="">
                     <label for="projectName">Project Name:</label>
                     <input type="text" id="projectName" name="projectName" required>
                     <label for="allTeams">Team:</label>
@@ -89,6 +100,10 @@
             </dialog>
             <?php if (isset($_GET['added'])): ?>
                 <p class="note">Project successfully added.</p>
+            <?php elseif (isset($_GET['updated'])): ?>
+                <p class="note">Project successfully updated.</p>
+            <?php elseif (isset($_GET['deleted'])): ?>
+                <p class="note">Project successfully deleted.</p>
             <?php elseif (($_GET['error'] ?? '') == 'invalid'): ?>
                 <p class="note">Please double check your inputs and try again. </p>
             <?php elseif (($_GET['error'] ?? '') === 'db'): ?>
@@ -103,16 +118,26 @@
                 ?>
                     <div class="card project-card" data-search="<?= esc($searchText) ?>" data-dept="<?= esc(mb_strtolower($p['department'] ?? '')) ?>">
                         <div class="project-title">
+                            <div class="project-header">
                             <?php if(!empty($p['project_name'])): ?>
                                 <h3><?= esc($p['project_name'])?> <span>(<?= esc($p['department']) ?>)</span> </h3>
                             <?php else: ?>
                                 <h3>No Title Given <span>(<?= esc($p['department']) ?>)</span> </h3>
                             <?php endif; ?>
+                            <div class="project-actions">
+                                <button type="button" class="edit_project" data-project="<?= esc(json_encode($p)) ?>">Edit project</button>
+                                <form action="projectadd.php" method="POST" class="inline-form" onsubmit="return confirm('Delete this project? This action cannot be undone.');">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="projectId" value="<?= (int)$p['project_id'] ?>">
+                                    <button type="submit" class="delete_project">Delete project</button>
+                                </form>
+                            </div>
+                            </div>
                             <p>Project status: <?= esc($p['project_status']) ?></p>  
                         </div>
                         <div class="project-details">
                         <p>Project description and requirements: <?= esc($p['project_description']) ?></p> 
-                        <p>Team(s) that worked on the project: <?= esc($p['team_name']) ?></p>
+                        <p>Team: <?= esc($p['team_name']) ?></p>
                         <span>Start Date: <?= esc($p['start_date']) ?></span>
                         <span>End Date: <?= esc($p['end_date']) ?></span>
                     </div>
@@ -124,7 +149,7 @@
                             <span>No repository link given.</span>
                         <?php endif; ?>
                         </p>
-                        <button id="req" class="proj_req">Request project</button>
+                        <button class="proj_req">Request project</button>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -140,9 +165,9 @@
                     })
                     .catch(error => console.error("Error loading navbar: ", error));
         
-                    document.querySelectorAll(".project-title").forEach(t => {
-                        t.addEventListener('click', openDetails);
-                    });
+                    // document.querySelectorAll(".project-header").forEach(t => {
+                    //     t.addEventListener('click', openDetails);
+                    // });
                     document.querySelectorAll(".proj_req").forEach(r => {
                         r.addEventListener('click', requestProject);
                     });
@@ -154,16 +179,50 @@
                     sort.addEventListener('change', updateSearch);
 
                     const popup = document.getElementById("addForm");
-                    const addBtn = document.querySelector(".addProject")
-                    addBtn.addEventListener('click', () => {
+                    const form = popup.querySelector("form");
+                    const dialogTitle = popup.querySelector("h3");
+                    const submitBtn = document.getElementById("submitBtn");
+
+                    document.querySelector(".addProject").addEventListener('click', () => {
+                        form.reset();
+                        document.getElementById("formAction").value = "add";
+                        document.getElementById("projectId").value = "";
+                        dialogTitle.textContent = "Add Project";
+                        submitBtn.textContent = "Add Project";
                         popup.showModal();
                     });
-                    const closeBtn = document.getElementById("closeBtn");
-                    closeBtn.addEventListener('click', () => {
-                        popup.close();
+
+                    document.querySelectorAll(".edit_project").forEach(btn => {
+                        btn.addEventListener('click', e => {
+                            const p = JSON.parse(btn.dataset.project);
+                            
+                            form.reset();
+                            document.getElementById("formAction").value= "edit";
+                            document.getElementById("projectId").value = p.project_id;
+                            document.getElementById("projectName").value = p.project_name ?? "";
+                            document.getElementById("allTeams").value = p.team_id ?? "";
+                            document.getElementById("projectDescription").value = p.project_description ?? "";
+                            document.getElementById("projectReqs").value = p.project_requirements ?? "";
+                            document.getElementById("projectStatus").value = p.project_status ?? "not started";
+                            document.getElementById("depts").value = p.department ?? "";
+                            document.getElementById("repoLink").value = p.repo_link ?? "";
+
+                            dialogTitle.textContent = "Edit Project";
+                            submitBtn.textContent = "Save Changes";
+                            popup.showModal();
+                        });
                     });
+                    // const addBtn = document.querySelector(".addProject")
+                    // addBtn.addEventListener('click', () => {
+                    //     popup.showModal();
+                    // });
+                    // const closeBtn = document.getElementById("closeBtn");
+                    // closeBtn.addEventListener('click', () => {
+                    //     popup.close();
+                    // });
                     //const submitBtn = document.getElementById(".submitBtn");
                     //submitBtn.addEventListener('click', addProject);
+                    document.getElementById("closeBtn").addEventListener('click', () => popup.close());
                 }
 
                 function openDetails(){
