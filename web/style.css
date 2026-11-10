@@ -215,15 +215,10 @@ body.projects-page h1 {
     border: 1px solid #38bdf8;
     border-radius: 10px;
     background: transparent;
-    color: #38bdf8;
+    color: #0f172a;
     font: inherit;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
-}
-
-.proj_req:hover {
-    background: #38bdf8;
-    color: #0f172a;
 }
 
 /* teams styling */
