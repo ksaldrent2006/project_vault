@@ -42,7 +42,7 @@
     $repo = trim($_POST['repoLink'] ?? '');
     $teamId = (int)($_POST['teamId'] ?? 0);
 
-    $allowedStatus = ['not started', 'in progress', 'completed'];
+    $allowedStatus = ['not started', 'in progress', 'completed', 'discontinued'];
     $allowedDepts = ['Computer Science', 'Engineering'];
 
     if($name === '' || $teamId <= 0 

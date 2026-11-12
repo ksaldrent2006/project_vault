@@ -166,7 +166,7 @@ $allTeams = PVDatabase::getDataFromSQL(
                     <form method="post" onsubmit="return confirm('Leave this team?');">
                         <input type="hidden" name="action" value="leave">
                         <input type="hidden" name="team_id" value="<?= $t['team_id'] ?>">
-                        <button type="submit" class="error">Leave team</button>
+                        <button type="submit" class="btn btn-danger">Leave team</button>
                     </form>
                 </div>
             </div>
@@ -182,7 +182,7 @@ $allTeams = PVDatabase::getDataFromSQL(
             <label>Advisor <input type="text" name="advisor"></label>
             <label>Start Date <input type="date" name="start_date"></label>
             <label>End Date <input type="date" name="end_date"></label>
-            <button type="submit">Create Team</button>
+            <button type="submit" class="btn">Create Team</button>
         </form>
     </div>
  
@@ -226,7 +226,7 @@ $allTeams = PVDatabase::getDataFromSQL(
                     <form method="post">
                         <input type="hidden" name="action" value="join">
                         <input type="hidden" name="team_id" value="<?= $t['team_id'] ?>">
-                        <button type="submit">Join team</button>
+                        <button type="submit" class="btn">Join team</button>
                     </form>
                 <?php endif; ?>
             </div>

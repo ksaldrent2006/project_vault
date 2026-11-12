@@ -53,7 +53,7 @@
                     <option value="engineering">Engineering</option>
                 </select>
                 <!-- maybe add a sort by start date and end date feature -->
-                <button type="button" class="addProject">Add Project</button>
+                <button type="button" class="addProject btn">Add Project</button>
             </div>
             <?php if(empty($projects)): ?>
                 <p>No projects found.</p>
@@ -83,6 +83,7 @@
                             <option value="not started"> Not Started </option>  
                             <option value="in progress">In Progress</option>
                             <option value="completed">Completed</option>
+                            <option value="discontinued">Discontinued</option>
                         </select>
                     <label for="depts">Department:</label>
                         <select id="depts" name="department">
@@ -119,37 +120,39 @@
                     <div class="card project-card" data-search="<?= esc($searchText) ?>" data-dept="<?= esc(mb_strtolower($p['department'] ?? '')) ?>">
                         <div class="project-title">
                             <div class="project-header">
-                            <?php if(!empty($p['project_name'])): ?>
-                                <h3><?= esc($p['project_name'])?> <span>(<?= esc($p['department']) ?>)</span> </h3>
-                            <?php else: ?>
-                                <h3>No Title Given <span>(<?= esc($p['department']) ?>)</span> </h3>
-                            <?php endif; ?>
+                                <h3>
+                                    <?= !empty($p['project_name']) ? esc($p['project_name']) : 'No Title Given' ?>
+                                    <span>(<?= esc($p['department']) ?>)</span>
+                                </h3>   
                             <div class="project-actions">
-                                <button type="button" class="edit_project" data-project="<?= esc(json_encode($p)) ?>">Edit project</button>
+                                <button type="button" class="edit_project btn" data-project="<?= esc(json_encode($p)) ?>">Edit project</button>
                                 <form action="projectadd.php" method="POST" class="inline-form" onsubmit="return confirm('Delete this project? This action cannot be undone.');">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="projectId" value="<?= (int)$p['project_id'] ?>">
-                                    <button type="submit" class="delete_project">Delete project</button>
+                                    <button type="submit" class="delete_project btn btn-danger">Delete project</button>
                                 </form>
                             </div>
                             </div>
-                            <p>Project status: <?= esc($p['project_status']) ?></p>  
+                            <p>Project Status: <?= esc($p['project_status']) ?></p>  
                         </div>
                         <div class="project-details">
-                        <p>Project description and requirements: <?= esc($p['project_description']) ?></p> 
+                        <p>Project Description: <?= esc($p['project_description']) ?></p> 
                         <p>Team: <?= esc($p['team_name']) ?></p>
                         <span>Start Date: <?= esc($p['start_date']) ?></span>
                         <span>End Date: <?= esc($p['end_date']) ?></span>
                     </div>
                     <div class="project-links">
-                        <p>Repo link:
+                        <p>Repo Link:
                         <?php if(!empty($p['repo_link'])): ?>
                             <a href="<?= esc($p['repo_link']) ?>" target="_blank" rel="noopener">Repository</a>
                         <?php else: ?>
                             <span>No repository link given.</span>
                         <?php endif; ?>
                         </p>
-                        <button class="proj_req">Request project</button>
+                        <div class="project-buttons">
+                            <a class="proj_docs btn" href="progress.php?project_id=<?= (int)$p['project_id'] ?>">See project documentation</a>
+                            <button class="proj_req btn">Request project</button>
+                        </div>
                     </div>
                 </div>
             <?php endforeach; ?>

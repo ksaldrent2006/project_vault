@@ -171,7 +171,7 @@ body.projects-page h1 {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    cursor: pointer;
+    /* cursor: pointer; */
 }
 
 .project-title h3 {
@@ -196,41 +196,6 @@ body.projects-page h1 {
     flex-shrink: 0;
 }
 
-.edit_project,
-.delete_project {
-    padding: 0.4rem, 0.9rem;
-    border-radius: 10px;
-    background: transparent;
-    font: inherit;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-
-.edit_project {
-    border: 1px solid #38bdf8;
-    color: #0f172a;
-}
-
-.edit_project:hover {
-    background: #38bdf8;
-    color:#1e293b;
-}
-
-.delete_project {
-    padding: 0.6rem 1.2rem;
-    border: 1px solid #38bdf8;
-    border-radius: 10px;
-    background: #1e293b;
-    color: #38bdf8;
-    font: inherit;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.15s;
-}
-
-.delete_project:hover {
-    background: #38bdf8;
-    color: #0f172a;
-}
 .project-details {
     margin-top: 1rem;
     color: #cbd5e1;
@@ -258,16 +223,82 @@ body.projects-page h1 {
     text-decoration: underline;
 }
 
-.proj_req {
-    padding: 0.5rem 1rem;
-    border: 1px solid #38bdf8;
+/*
+.card .edit_project,
+.card .delete_project {
+    padding: 0.4rem 0.9rem;
     border-radius: 10px;
     background: transparent;
-    color: #0f172a;
     font: inherit;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
 }
+
+.card .edit_project {
+    border: 1px solid #38bdf8;
+    color: #38bdf8;
+}
+
+.card .edit_project:hover {
+    background: #38bdf8;
+    color:#0f172a;
+}
+
+.card .delete_project {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #38bdf8;
+    border-radius: 10px;
+    background: #1e293b;
+    color: #f87171;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+}
+
+.card .delete_project:hover {
+    background: #f87171;
+    color: #0f172a;
+}
+
+.card .proj_req {
+    padding: 0.5rem 1rem;
+    border: 1px solid #38bdf8;
+    border-radius: 10px;
+    background: transparent;
+    color: #38bdf8;
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.card .proj_req:hover {
+    background: #38bdf8;
+    color: #0f172a;
+}
+*/
+
+/*  group docs + request buttons together*/
+.project-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/*
+.project-links a.proj_docs {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #38bdf8;
+    border-radius: 10px;
+    color: #38bdf8;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.project-links a.proj_docs:hover {
+    background: #38bdf8;
+    color: #0f172a;
+    text-decoration: none;
+}
+*/
 
 /* teams styling */
 .inline-form {
@@ -335,6 +366,7 @@ body.projects-page .message {
 
 /* Add project button and form */
 
+/*
 .addProject {
     padding: 0.6rem 1.2rem;
     border: 1px solid #38bdf8;
@@ -350,6 +382,7 @@ body.projects-page .message {
     background: #38bdf8;
     color: #0f172a;
 }
+*/
 
 #addForm {
     width: min(500px, 92vw);
@@ -431,4 +464,69 @@ body.projects-page .message {
 #addForm #closeBtn:hover {
     border-color: #38bdf8;
     color: #38bdf8;
+}
+
+/* reusable buttons (projects + teams page) */
+.btn,
+.card .btn {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #38bdf8;
+    border-radius: 10px;
+    background: transparent;
+    color: #38bdf8;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+ 
+.btn:hover,
+.card .btn:hover {
+    background: #38bdf8;
+    color: #0f172a;
+    text-decoration: none;  
+}
+ 
+/* danger button (leave, delete): red outline */
+.btn.btn-danger,
+.card .btn.btn-danger {
+    border-color: #f87171;
+    color: #f87171;
+}
+ 
+.btn.btn-danger:hover,
+.card .btn.btn-danger:hover {
+    background: #f87171;
+    color: #0f172a;
+}
+
+/* progress page */
+.progress-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: left;
+}
+ 
+/* space between the cards */
+.progress-page .card {
+    margin: 1rem 0;
+}
+ 
+.progress-page h3 {
+    margin: 0;
+    color: #38bdf8;
+}
+ 
+.progress-page .btn {
+    align-self: flex-start;
+}
+ 
+/* textareas in the popup, matching the inputs */
+#addForm textarea {
+    padding: 0.6rem 0.9rem;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #f1f5f9;
+    font: inherit;
 }
