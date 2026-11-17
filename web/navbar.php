@@ -16,6 +16,7 @@
             <a href="index.php">Coming Soon</a>
             <a href="projects.php">Projects</a>
             <a href="teams.php">Teams</a>
+            <a href="requests.php">Requests</a>
             <br>
             <a href="logout.php">Logout</a>
             <a href="edit_profile.php">My Profile</a>

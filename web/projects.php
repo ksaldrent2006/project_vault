@@ -58,7 +58,7 @@
             <?php if(empty($projects)): ?>
                 <p>No projects found.</p>
             <?php endif; ?>
-            <dialog id="addForm">
+            <dialog id="addForm" class="form-dialog">
                 <h3>Add Project</h3>
                 <!-- this will need to be connected to where our post methods are stored -->
                 <form action="projectadd.php" method="POST">
@@ -96,6 +96,20 @@
                     <div class="actions">
                         <button type="button" id="closeBtn">Close</button>
                         <button type="submit" id="submitBtn">Add Project</button>
+                    </div>
+                </form>
+            </dialog>
+            <dialog id="requestForm" class="form-dialog">
+                <h3>Request Project</h3>
+                <p id="requestProjectName" class="note"></p>
+                <form action="requests.php" method="POST">
+                    <input type="hidden" name="action" value="create">
+                    <input type="hidden" name="projectId" id="requestProjectId" value="">
+                    <label for="requestDescription">Why do you want this project?</label>
+                    <input type="text" id="requestDescription" name="requestDescription">
+                    <div class="actions">
+                        <button type="button" id="requestCloseBtn">Cancel</button>
+                        <button type="submit" id="requestSubmitBtn">Send Request</button>
                     </div>
                 </form>
             </dialog>
@@ -151,7 +165,7 @@
                         </p>
                         <div class="project-buttons">
                             <a class="proj_docs btn" href="progress.php?project_id=<?= (int)$p['project_id'] ?>">See project documentation</a>
-                            <button class="proj_req btn">Request project</button>
+                            <button class="proj_req btn" type="button" data-project-id="<?= (int)$p['project_id'] ?>" data-project-name="<?= esc($p['project_name'] ?? '') ?>">Request project</button>
                         </div>
                     </div>
                 </div>
@@ -171,9 +185,6 @@
                     // document.querySelectorAll(".project-header").forEach(t => {
                     //     t.addEventListener('click', openDetails);
                     // });
-                    document.querySelectorAll(".proj_req").forEach(r => {
-                        r.addEventListener('click', requestProject);
-                    });
 
                     let searchBar = document.getElementById("searchBar");
                     let sort = document.getElementById("deptSort");
@@ -226,6 +237,19 @@
                     //const submitBtn = document.getElementById(".submitBtn");
                     //submitBtn.addEventListener('click', addProject);
                     document.getElementById("closeBtn").addEventListener('click', () => popup.close());
+
+                    const reqPopup = document.getElementById("requestForm");
+
+                    document.querySelectorAll(".proj_req").forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            reqPopup.querySelector("form").reset();
+                            document.getElementById("requestProjectId").value = btn.dataset.projectId;
+                            document.getElementById("requestProjectName").textContent = btn.dataset.projectName;
+                            reqPopup.showModal();
+                        });
+                    });
+
+                    document.getElementById("requestCloseBtn").addEventListener('click', () => reqPopup.close());
                 }
 
                 function openDetails(){
@@ -242,10 +266,6 @@
                         card.style.display = (matchSearch) ? "" : "none";
                         card.style.display = (matchSearch && matchDept) ? "" : "none";
                     });
-                }
-
-                function requestProject(){
-                    console.log("Requesting project");
                 }
 
                 function addProject(){
