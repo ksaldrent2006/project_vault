@@ -384,7 +384,7 @@ body.projects-page .message {
 }
 */
 
-#addForm {
+.form-dialog {
     width: min(500px, 92vw);
     max-height: 90vh;
     overflow-y: auto;
@@ -396,30 +396,31 @@ body.projects-page .message {
     text-align: left;
 }
 
-#addForm::backdrop{
+.form-dialog::backdrop {
     background: rgba(15, 23, 42, 0.7);
 }
 
-#addForm h3{
+.form-dialog h3 {
     margin: 0 0 1.25rem;
     font-size: 1.4rem;
 }
 
-#addForm form {
+.form-dialog form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-#addForm label{
+.form-dialog label {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
     color: #94a3b8;
 }
 
-#addForm input,
-#addForm select {
+.form-dialog input,
+.form-dialog select,
+.form-dialog textarea {
     padding: 0.6rem 0.9rem;
     border: 1px solid #334155;
     border-radius: 10px;
@@ -428,40 +429,57 @@ body.projects-page .message {
     font: inherit;
 }
 
-#addForm select option{
+.form-dialog input::placeholder,
+.form-dialog textarea::placeholder {
+    color: #64748b;
+}
+
+.form-dialog input:focus,
+.form-dialog select:focus,
+.form-dialog textarea:focus {
+    outline: none;
+    border-color: #38bdf8;
+}
+
+.form-dialog select option {
     background: #1e293b;
     color: #f1f5f9;
 }
 
-/* buttons */
-
-#addForm .actions{
+/* buttons: type="submit" is primary, type="button" is secondary */
+.form-dialog .actions {
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
     margin-top: 0.5rem;
 }
 
-#addForm .actions button{
+.form-dialog .actions button {
     padding: 0.6rem 1.2rem;
     border-radius: 10px;
     font: inherit;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-#addForm #submitBtn:hover {
+.form-dialog .actions button[type="submit"] {
+    border: none;
+    background: #38bdf8;
+    color: #0f172a;
+}
+
+.form-dialog .actions button[type="submit"]:hover {
     background: #7dd3fc;
 }
 
-#addForm #closeBtn {
+.form-dialog .actions button[type="button"] {
     border: 1px solid #334155;
-    background: transparent; 
+    background: transparent;
     color: #cbd5e1;
 }
 
-#addForm #closeBtn:hover {
+.form-dialog .actions button[type="button"]:hover {
     border-color: #38bdf8;
     color: #38bdf8;
 }
