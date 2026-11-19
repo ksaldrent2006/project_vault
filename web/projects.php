@@ -25,10 +25,19 @@
         FROM team;"
     );
 
+    $meId = (int)$me;
+
     $projectInfo = PVDatabase::getDataFromSQL(
+        /*
         "SELECT p.project_id, p.department, p.project_status, p.project_description, p.project_requirements, p.team_id, p.repo_link, p.project_name, t.start_date, t.end_date, t.advisor, t.team_name
         FROM projects p
         LEFT JOIN team t ON t.team_id = p.team_id"
+        */
+        "SELECT p.project_id, p.department, p.project_status, p.project_description, p.project_requirements, p.team_id, p.repo_link, p.project_name, t.start_date, t.end_date, t.advisor, t.team_name,
+        (tm.member_id IS NOT NULL) AS is_member
+        FROM projects p
+        LEFT JOIN team t ON t.team_id = p.team_id
+        LEFT JOIN team_member tm ON tm.team_id = p.team_id AND tm.member_id = $meId"
     );
 
     ?>
@@ -113,6 +122,7 @@
 
             <div class="projects">
                 <?php foreach ($projectInfo as $p): 
+                    $isMember = !empty($p['is_member']);
                     $searchText = strtolower(
                         ($p['project_name'] ?? '') . ' ' .
                         ($p['team_name'] ?? ' '));
@@ -123,15 +133,17 @@
                                 <h3>
                                     <?= !empty($p['project_name']) ? esc($p['project_name']) : 'No Title Given' ?>
                                     <span>(<?= esc($p['department']) ?>)</span>
-                                </h3>   
+                                </h3>
+                            <?php if ($isMember): ?> 
                             <div class="project-actions">
                                 <button type="button" class="edit_project btn" data-project="<?= esc(json_encode($p)) ?>">Edit project</button>
-                                <form action="projectadd.php" method="POST" class="inline-form" onsubmit="return confirm('Delete this project? This action cannot be undone.');">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="projectId" value="<?= (int)$p['project_id'] ?>">
-                                    <button type="submit" class="delete_project btn btn-danger">Delete project</button>
+                                    <form action="projectadd.php" method="POST" class="inline-form" onsubmit="return confirm('Delete this project? This action cannot be undone.');">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="projectId" value="<?= (int)$p['project_id'] ?>">
+                                        <button type="submit" class="delete_project btn btn-danger">Delete project</button>
                                 </form>
                             </div>
+                            <?php endif; ?>
                             </div>
                             <p>Project Status: <?= esc($p['project_status']) ?></p>  
                         </div>
@@ -151,7 +163,9 @@
                         </p>
                         <div class="project-buttons">
                             <a class="proj_docs btn" href="progress.php?project_id=<?= (int)$p['project_id'] ?>">See project documentation</a>
+                            <?php if (!$isMember): ?>
                             <button class="proj_req btn">Request project</button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
