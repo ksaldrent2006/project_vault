@@ -132,6 +132,8 @@
                 <p class="note">Please double check your inputs and try again. </p>
             <?php elseif (($_GET['error'] ?? '') === 'db'): ?>
                 <p class="note">Could not save project. Please try again later. </p>
+            <?php elseif (($_GET['error'] ?? '') === 'forbidden'): ?>
+                <p class="note">Only members of this project's team can edit or delete it.</p>
             <?php endif; ?>
 
             <div class="projects">

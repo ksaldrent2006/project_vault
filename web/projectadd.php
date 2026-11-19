@@ -1,4 +1,5 @@
 <?php 
+    session_start();
     require_once __DIR__ . "/../includes/config.php";
     require_once __DIR__ . "/../includes/PVDatabase.php";
 
@@ -7,13 +8,36 @@
         exit;
     }
 
+    // only logged in users can add/edit/delete
+    if (!isset($_SESSION['person_id']) {
+        header('Location: login.php');
+        exit;
+    })
+
     function redirect($query){
         header("Location: projects.php?" . $query);
         exit;
     }
 
+    function isTeamMember($personId, $projectId) {
+        $personId = (int)$personId;
+        $projectId = (int)$projectId;
+        $rows = PVDatabase::getDataFromSQL(
+            "SELECT 1 FROM projects p
+             JOIN team_member tm ON tm.team_id = p.team_id
+             WHERE p.project_id = $projectId AND tm.member_id = $personId"
+        );
+        return !empty($rows);
+    }
+
+    $me = (int)$_SESSION['person_id'];
     $action = $_POST['action'] ?? '';
     $projectId = (int)($_POST['projectId'] ?? 0);
+
+    // only team members can edit or delete a project
+    if (($action == 'edit' || $action === 'delete') && !isTeamMember($me, $projectId)) {
+        redirect("error=forbidden");
+    }
 
     // DELETE Function
     if($action === 'delete'){
