@@ -4,11 +4,13 @@
  *  - My Teams: see the teams i'm on, leave one
  *  - Create a Team: make a new team and join it automatically
  *  - All Teams: search/sort every team and join one
+ *  - Admin only: add anyone to a team, remove anyone from a team
  */
 
 session_start();
 require_once __DIR__ . "/../includes/config.php";
 require_once __DIR__ . "/../includes/PVDatabase.php";
+require_once __DIR__ . "/../includes/permissions.php";
 
 // only loggined in users can use this page
 if (!isset($_SESSION['person_id'])) {
@@ -17,7 +19,9 @@ if (!isset($_SESSION['person_id'])) {
 }
 
 $me = $_SESSION['person_id'];
+$isAdmin = isAdmin($me);
 $message = '';
+$messageType = 'success';
 
 function esc($value){
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
@@ -45,11 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Team created!';
         }
 
+        // NOTE: there is no "join" action. students join a team by requesting a project.
+        /*
         if ($action === 'join') {
             PVDatabase::executeSQL("INSERT INTO team_member (member_id, team_id) VALUES (?, ?)",
             [$me, $teamId]);
             $message = 'You joined the team!';
         }
+        */
 
         if ($action === 'leave') {
             PVDatabase::executeSQL("DELETE FROM team_member WHERE member_id = ? AND team_id = ?",
@@ -57,10 +64,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'You left the team.';
         }
 
-        } catch (PDOException $e) {
-            // duplicate entry
-            $message = ($e->errorInfo[1] == 1062) ? "You're already on that team." : 'Something went wrong.';        
+        // admin only: add person
+        if ($action === 'admin_add' && $isAdmin) {
+            $personId = (int)($_POST['person_id'] ?? 0);
+            if ($personId <= 0 || $teamId <= 0) {
+                $message = 'Please pick a person and a team.';
+                $messageType = 'error';
+            } else {
+                PVDatabase::executeSQL(
+                    "INSERT IGNORE INTO team_member (member_id, team_id) VALUES (?, ?)",
+                    [$personId, $teamId]
+                );
+                $message = 'Member added to team.';
+            }
         }
+
+        // admin only: remove person
+        if ($action === 'admin_remove' && $isAdmin) {
+            PVDatabase::executeSQL("DELETE FROM team_member WHERE member_id = ? AND team_id = ?",
+            [(int)($_POST['person_id'] ?? 0), $teamId]);
+            $message = 'Member removed from team.';
+        }
+
+        } catch (PDOException $e) {
+            error_log("Teams action failed: " . $e->getMessage());
+            $message = 'Something went wrong.';
+            $messageType = 'error';
+        }       
 }
 
 // my teams
@@ -74,7 +104,7 @@ $myTeams = PVDatabase::getDataFromSQL(
 
 // team members
 $memberRows = PVDatabase::getDataFromSQL(
-    "SELECT tm.team_id, p.first_name, p.last_name, p.email_address
+    "SELECT tm.team_id, p.person_id, p.first_name, p.last_name, p.email_address
     FROM team_member tm
     JOIN person p ON p.person_id = tm.member_id
     ORDER BY p.first_name, p.last_name"
@@ -86,32 +116,12 @@ foreach ($memberRows as $row) {
     if ($name === '') {
         $name = $row['email_address']; 
     }
-    $membersByTeam[$row['team_id']][] = $name;
+    $membersByTeam[$row['team_id']][] = ['id' => (int)$row['person_id'], 'name' => $name];
 }
 
-// all teams (search and sort)
-/*
-$search = trim($_GET['search'] ?? '');
-$sort = $_GET['sort'] ?? 'newest';
-
-$sortOptions = [
-    'newest' => 't.team_id DESC',
-    'start' => 't.start_date ASC',
-    'name' => 't.team_name ASC'
-];
-$orderBy = $sortOptions[$sort] ?? $sortOptions['newest'];
-
-// is_member = 1 is for when i'm on the team (shows Joined instead of a Join button)
-$allTeams = PVDatabase::getDataFromSQL(
-    "SELECT t.*,
-            EXISTS (SELECT 1 FROM team_member tm
-                    WHERE tm.team_id = t.team_id AND tm.member_id = ?) AS is_member
-     FROM team t
-     WHERE t.team_name LIKE ? OR t.advisor LIKE ?
-     ORDER BY $orderBy",
-    [$me, "%$search%", "%$search%"]
-);
-*/
+function memberNames($members) {
+    return implode(', ', array_column($members, 'name'));
+}
 
 $allTeams = PVDatabase::getDataFromSQL(
     "SELECT t.*,
@@ -123,6 +133,16 @@ $allTeams = PVDatabase::getDataFromSQL(
         [$me]
 );
 
+// admin only: everyone for dropdown
+$people = [];
+if ($isAdmin) {
+    $people = PVDatabase::getDataFromSQL(
+        "SELECT person_id, first_name, last_name, email_address, role
+         FROM person
+         WHERE currently_active = 1
+         ORDER BY last_name, first_name"
+    );
+}
 
 ?>
 
@@ -140,7 +160,7 @@ $allTeams = PVDatabase::getDataFromSQL(
     <!-- NOTE: this html reuse some of the stuff from projects.php for consistency -->
 
     <?php if ($message): ?>
-        <div class="message"><?= esc($message) ?></div>
+        <div class="message <?= $messageType ?>"><?= esc($message) ?></div>
     <?php endif; ?>
 
 
@@ -158,7 +178,7 @@ $allTeams = PVDatabase::getDataFromSQL(
                 </div>
                 <div class="project-details">
                     <p>Advisor: <?= esc($t['advisor']) ?></p>
-                    <p>Members: <?= esc(implode(', ', $membersByTeam[$t['team_id']] ?? [])) ?></p>
+                    <p>Members: <?= esc(memberNames($membersByTeam[$t['team_id']] ?? [])) ?></p>
                     <span>Start Date: <?= esc($t['start_date']) ?></span>
                     <span>End Date: <?= esc($t['end_date']) ?></span>
                 </div>
@@ -185,6 +205,35 @@ $allTeams = PVDatabase::getDataFromSQL(
             <button type="submit" class="btn">Create Team</button>
         </form>
     </div>
+
+    <!-- admin only: add anyone to any team -->
+    <?php if ($isAdmin): ?>
+        <h2>Add a Member <span class="admin-tag">(Admin)</span></h2>
+        <div class="card create-team">
+            <form method="post" class="auth-form">
+                <input type="hidden" name="action" value="admin_add">
+                <label>Person
+                    <select name="person_id" required>
+                        <option value="">Select a person</option>
+                        <?php foreach ($people as $p): ?>
+                            <option value="<?= (int)$p['person_id'] ?>">
+                                <?= esc($p['first_name'] . ' ' . $p['last_name']) ?> (<?= esc($p['email_address']) ?>, <?= esc($p['role']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <label>Team
+                    <select name="team_id" required>
+                        <option value="">Select a team</option>
+                        <?php foreach ($allTeams as $t): ?>
+                            <option value="<?= (int)$t['team_id'] ?>"><?= esc($t['team_name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <button type="submit" class="btn">Add to team</button>
+            </form>
+        </div>
+    <?php endif; ?>
  
     <!-- all teams -->
     <h2>All Teams</h2>
@@ -203,6 +252,7 @@ $allTeams = PVDatabase::getDataFromSQL(
 
     <div class="projects" id="allTeamsList">
         <?php foreach ($allTeams as $t):
+            $members = $membersByTeam[$t['team_id']] ?? [];
             $searchText = strtolower(($t['team_name'] ?? '') . ' ' . ($t['advisor'] ?? ''));
         ?>
  
@@ -217,17 +267,34 @@ $allTeams = PVDatabase::getDataFromSQL(
             <div class="project-details">
                 <p>Advisor: <?= esc($t['advisor']) ?></p>
                 <span>Start Date: <?= esc($t['start_date']) ?></span>
+                <br>
                 <span>End Date: <?= esc($t['end_date']) ?></span>
             </div>
+            <?php if ($isAdmin): ?>
+                <!-- admin: every member with a remove button -->
+                <?php if (!$members): ?>
+                    <p class="note">No members yet. Add someone with the form above.</p>
+                <?php else: ?>
+                    <ul class="member-list">
+                        <?php foreach ($members as $m): ?>
+                            <li>
+                                <span><?= esc($m['name']) ?></span>
+                                <form method="post" class="inline-form" onsubmit="return confirm('Remove this person from the team?');">
+                                    <input type="hidden" name="action" value="admin_remove">
+                                    <input type="hidden" name="team_id" value="<?= (int)$t['team_id'] ?>">
+                                    <input type="hidden" name="person_id" value="<?= (int)$m['id'] ?>">
+                                    <button type="submit" class="btn btn-danger">Remove</button>
+                                </form>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            <?php endif; ?>
             <div class="project-links">
                 <?php if ($t['is_member']): ?>
                     <span class="note">Joined ✓</span>
-                <?php else: ?>
-                    <form method="post">
-                        <input type="hidden" name="action" value="join">
-                        <input type="hidden" name="team_id" value="<?= $t['team_id'] ?>">
-                        <button type="submit" class="btn">Join team</button>
-                    </form>
+                <?php elseif (!$isAdmin): ?>
+                    <span class="note">To join, request one of this team's projects on the <a href="projects.php">Projects</a> page.</span>
                 <?php endif; ?>
             </div>
         </div>

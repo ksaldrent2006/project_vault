@@ -10,6 +10,7 @@
 session_start();
 require_once __DIR__ . "/../includes/config.php";
 require_once __DIR__ . "/../includes/PVDatabase.php";
+require_once __DIR__ . "/../includes/permissions.php";
  
 // only logged in users can use this page
 if (!isset($_SESSION['person_id'])) {
@@ -25,6 +26,10 @@ function esc($value){
 // project id
 $projectId = (int)($_GET['project_id'] ?? 0);
 
+// team members/admin have privlegies, everyone else can only read
+$me = (int)$_SESSION['person_id'];
+$canManage = canManageProject($me, $projectId);
+
 // status
 $statuses = ['not started', 'in progress', 'completed', 'discontinued'];
 
@@ -33,6 +38,12 @@ $statuses = ['not started', 'in progress', 'completed', 'discontinued'];
  */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+
+    // block changes from people who are not on the team (even if they edit the form)
+    if (!$canManage) {
+        header("Location: progress.php?project_id=$projectId&error=forbidden");
+        exit;
+    }
 
     if ($action === 'add') {
         $status = $_POST['status'] ?? '';
@@ -134,12 +145,15 @@ $updates = PVDatabase::getDataFromSQL(
                     No repository link given.
                 <?php endif; ?>
             </p>
-            <button type="button" class="btn" id="openAdd">+ Add update</button>
+            <?php if ($canManage): ?>
+                <button type="button" class="btn" id="openAdd">+ Add update</button>
+            <?php endif; ?>
         </div>
 
         <?php if (isset($_GET['added'])): ?> <p class="note">Update added.</p>
         <?php elseif (isset($_GET['deleted'])): ?> <p class="note">Update deleted.</p>
-        <?php elseif (isset($_GET['error'])): ?> <p class="note">The link has to start with http:// or https://</p>
+        <?php elseif (($_GET['error'] ?? '') === 'forbidden'): ?> <p class="note">Only members of this project's team (or an admin) can change its updates.</p>
+        <?php elseif (($_GET['error'] ?? '') === 'link'): ?> <p class="note">The link has to start with http:// or https://</p>
         <?php endif; ?>
 
         <h2>Progress Updates</h2>
@@ -159,18 +173,21 @@ $updates = PVDatabase::getDataFromSQL(
                 <?php if ($u['visual_materials']): ?>
                     <p><a href="<?= esc($u['visual_materials']) ?>" target="_blank" rel="noopener">Visual materials</a></p>
                 <?php endif; ?>
- 
+                    
+                <?php if ($canManage): ?>
                 <form method="POST" onsubmit="return confirm('Delete this update?');">
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="progress_id" value="<?= (int)$u['progress_id'] ?>">
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
     </main>
 
     <!-- popup form like projects.php -->
-    <dialog id="addForm">
+    <?php if ($canManage): ?>
+    <dialog id="addForm" class="form-dialog">
         <h3>Add progress update</h3>
         <form method="POST">
             <input type="hidden" name="action" value="add">
@@ -181,17 +198,18 @@ $updates = PVDatabase::getDataFromSQL(
                     <?php endforeach; ?>
                 </select>
             </label>
-            <label>Task steps <textarea name="task_steps" rows="4"></textarea></label>
+            <label>Task Steps <textarea name="task_steps" rows="4"></textarea></label>
             <label>Challenges <textarea name="challenges" rows="3"></textarea></label>
-            <label>Visual materials link <input type="url" name="visual_materials" placeholder="https://..."></label>
-            <label>Start date <input type="date" name="start_date"></label>
-            <label>End date <input type="date" name="end_date"></label>
+            <label>Visual Materials Link <input type="url" name="visual_materials" placeholder="https://..."></label>
+            <label>Start Date <input type="date" name="start_date"></label>
+            <label>End Date <input type="date" name="end_date"></label>
             <div class="actions">
                 <button type="button" id="closeBtn">Close</button>
                 <button type="submit" id="submitBtn">Add update</button>
             </div>
         </form>
     </dialog>
+    <?php endif; ?>
 <?php endif; ?>
 
     <script>

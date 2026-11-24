@@ -124,7 +124,8 @@ body.projects-page h1 {
 
 .search-sort input,
 .search-sort select,
-.create-team input {
+.create-team input,
+.create-team select {
     padding: 0.6rem 0.9rem;
     border: 1px solid #334155;
     border-radius: 10px;
@@ -140,12 +141,14 @@ body.projects-page h1 {
 
 .search-sort input:focus,
 .search-sort select:focus,
-.create-team input:focus {
+.create-team input:focus,
+.create-team select:focus {
     outline: none;
     border-color: #38bdf8;
 }
 
-.search-sort select option {
+.search-sort select option,
+.create-team select option {
     background: #1e293b;
     color: #f1f5f9;
 }
@@ -547,4 +550,25 @@ body.projects-page .message {
     background: rgba(255, 255, 255, 0.04);
     color: #f1f5f9;
     font: inherit;
+}
+
+/* list of members inside each team card */
+.member-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+}
+
+.member-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-top: 1px solid #334155;
+    color: #cbd5e1;
+}
+
+.member-list .role {
+    color: #94a3b8;
 }

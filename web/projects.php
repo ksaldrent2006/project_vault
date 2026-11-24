@@ -2,6 +2,7 @@
     session_start();
     require_once __DIR__ . "/../includes/config.php";
     require_once __DIR__ . "/../includes/PVDatabase.php";
+    require_once __DIR__ . "/../includes/permissions.php";
 
     // only loggined in users can use this page
     if (!isset($_SESSION['person_id'])) {
@@ -15,6 +16,7 @@
     function esc($value){
         return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
     }
+
     $projects = PVDatabase::getDataFromSQL(
         //make sure to add a project title column, I feel like we need that here
         "SELECT project_id, department, project_status, project_description, team_id, repo_link, project_name
@@ -26,6 +28,7 @@
     );
 
     $meId = (int)$me;
+    $isAdmin = isAdmin($meId); // admins can manage every project
 
     $projectInfo = PVDatabase::getDataFromSQL(
         /*
@@ -33,8 +36,22 @@
         FROM projects p
         LEFT JOIN team t ON t.team_id = p.team_id"
         */
+        /*
         "SELECT p.project_id, p.department, p.project_status, p.project_description, p.project_requirements, p.team_id, p.repo_link, p.project_name, t.start_date, t.end_date, t.advisor, t.team_name,
         (tm.member_id IS NOT NULL) AS is_member
+        FROM projects p
+        LEFT JOIN team t ON t.team_id = p.team_id
+        LEFT JOIN team_member tm ON tm.team_id = p.team_id AND tm.member_id = $meId"
+        */
+        "SELECT p.project_id, p.department, p.project_status, p.project_description, p.project_requirements, p.team_id, p.repo_link, p.project_name, t.start_date, t.end_date, t.advisor, t.team_name,
+        (tm.member_id IS NOT NULL) AS is_member,
+        (SELECT GROUP_CONCAT(CONCAT(pe.first_name, ' ', pe.last_name) SEPARATOR ', ')
+            FROM team_member tm2
+            JOIN person pe ON pe.person_id = tm2.member_id
+            WHERE tm2.team_id = p.team_id) AS member_names,
+        (SELECT GROUP_CONCAT(c.contributor_name ORDER BY c.contributor_id SEPARATOR ', ')
+            FROM project_contributor c
+            WHERE c.project_id = p.project_id) AS contributor_names
         FROM projects p
         LEFT JOIN team t ON t.team_id = p.team_id
         LEFT JOIN team_member tm ON tm.team_id = p.team_id AND tm.member_id = $meId"
@@ -102,6 +119,8 @@
                         </select>
                     <label for="repoLink">Repository Link:</label>
                     <input type="text" id="repoLink" name="repoLink">
+                    <label for="contributors">Contributors (comma separated):</label>
+                    <input type="text" id="contributors" name="contributors" placeholder="John Smith, Ana Rodriguez">
                     <div class="actions">
                         <button type="button" id="closeBtn">Close</button>
                         <button type="submit" id="submitBtn">Add Project</button>
@@ -133,15 +152,18 @@
             <?php elseif (($_GET['error'] ?? '') === 'db'): ?>
                 <p class="note">Could not save project. Please try again later. </p>
             <?php elseif (($_GET['error'] ?? '') === 'forbidden'): ?>
-                <p class="note">Only members of this project's team can edit or delete it.</p>
+                <p class="note">Only members of this project's team (or an admin) can edit or delete it.</p>
             <?php endif; ?>
 
             <div class="projects">
                 <?php foreach ($projectInfo as $p): 
-                    $isMember = !empty($p['is_member']);
+                    // on the team OR an admin can edit/delete
+                    $isMember = !empty($p['is_member']) || $isAdmin;
                     $searchText = strtolower(
                         ($p['project_name'] ?? '') . ' ' .
-                        ($p['team_name'] ?? ' '));
+                        ($p['team_name'] ?? ' ') . ' ' .
+                        ($p['member_names'] ?? '') . ' ' .
+                        ($p['contributor_names'] ?? ''));
                 ?>
                     <div class="card project-card" data-search="<?= esc($searchText) ?>" data-dept="<?= esc(mb_strtolower($p['department'] ?? '')) ?>">
                         <div class="project-title">
@@ -166,7 +188,12 @@
                         <div class="project-details">
                         <p>Project Description: <?= esc($p['project_description']) ?></p> 
                         <p>Team: <?= esc($p['team_name']) ?></p>
+                        <!--
+                        <p>Team Members: <?= esc($p['member_names'] ?: 'None listed') ?></p>
+                        -->
+                        <p>Contributors: <?= esc($p['contributor_names'] ?: 'None listed') ?></p>
                         <span>Start Date: <?= esc($p['start_date']) ?></span>
+                        <br>
                         <span>End Date: <?= esc($p['end_date']) ?></span>
                     </div>
                     <div class="project-links">
@@ -236,6 +263,7 @@
                             document.getElementById("projectStatus").value = p.project_status ?? "not started";
                             document.getElementById("depts").value = p.department ?? "";
                             document.getElementById("repoLink").value = p.repo_link ?? "";
+                            document.getElementById("contributors").value = p.contributor_names ?? "";
 
                             dialogTitle.textContent = "Edit Project";
                             submitBtn.textContent = "Save Changes";
