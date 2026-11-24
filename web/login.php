@@ -1,4 +1,9 @@
 <?php
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 /**
  * login.php checks email and password against the person table
  * and logs the user in
@@ -25,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pass = $_POST['password'] ?? '';
 
     // check that it's an etown email
-    if (!str_ends_with(strtolower($email), 'etown.edu')) {
+    if (substr(strtolower($email), -10) !== '@etown.edu') {
         $error = 'Only @etown.edu email addresses can log in.';
     } else {
         // find account by email

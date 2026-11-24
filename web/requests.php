@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
     session_start();
     require_once __DIR__ . "/../includes/config.php";
     require_once __DIR__ . "/../includes/PVDatabase.php";
@@ -25,7 +29,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
     //handle creating requests
     if($action === "create") {
-        $projectId = (int)($_POST['projectId'] ?? 0);
+        $projectId = (int)($_POST['project_id'] ?? 0);
         $desc = trim($_POST['requestDescription'] ?? '');
         $desc = $desc !== '' ? $desc : null;
 
