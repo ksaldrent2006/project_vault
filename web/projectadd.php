@@ -107,6 +107,18 @@ error_reporting(E_ALL);
         redirect("error=invalid");
     }
 
+    // you can only put a project on a team you are on (admin can pick any team)
+    // (the dropdown already hides other teams, this stops a forged form)
+    if (!isAdmin($me)) {
+        $onTeam = PVDatabase::getDataFromSQL(
+            "SELECT 1 FROM team_member WHERE member_id = ? AND team_id = ?",
+            [$me, $teamId]
+        );
+        if (empty($onTeam)) {
+            redirect("error=team");
+        }
+    }
+
     $desc = $desc !== '' ? $desc : null;
     $reqs = $reqs !== '' ? $reqs : null;
     // $teamId = $teamId > 0 ? $teamId : null;

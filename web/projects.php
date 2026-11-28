@@ -35,6 +35,21 @@ error_reporting(E_ALL);
     $meId = (int)$me;
     $isAdmin = isAdmin($meId); // admins can manage every project
 
+    if ($isAdmin) {
+        $teams = PVDatabase::getDataFromSQL(
+            "SELECT team_id, team_name FROM team ORDER BY team_name"
+        );
+    } else {
+        $teams = PVDatabase::getDataFromSQL(
+            "SELECT t.team_id, t.team_name
+            FROM team t
+            JOIN team_member tm ON tm.team_id = t.team_id
+            WHERE tm.member_id = ?
+            ORDER BY t.team_name",
+            [$meId]
+        );
+    }
+
     $projectInfo = PVDatabase::getDataFromSQL(
         /*
         "SELECT p.project_id, p.department, p.project_status, p.project_description, p.project_requirements, p.team_id, p.repo_link, p.project_name, t.start_date, t.end_date, t.advisor, t.team_name
@@ -98,7 +113,10 @@ error_reporting(E_ALL);
                     <label for="projectName">Project Name:</label>
                     <input type="text" id="projectName" name="projectName" required>
                     <label for="allTeams">Team:</label>
-                        <select id="allTeams" name="teamId"> 
+                        <?php if (empty($teams)): ?>
+                            <p class="note">You're not on any teams yet. <a href="teams.php">Create a team</a> first.</p>
+                        <?php endif; ?>
+                        <select id="allTeams" name="teamId" required> 
                             <option value="">Select a team</option>
                             <!-- <option value="0">No team</option> -->
                             <?php foreach ($teams as $t): ?>
